@@ -34,6 +34,19 @@ authRouter.get("/logout", authController.logoutUserController)
  * @access private
  */
 authRouter.get("/get-me", authMiddleware.authUser, authController.getMeController)
+/**
+ * @route GET /api/auth/profile
+ * @description get the current user's profile info along with aggregated stats
+ * @access private
+ */
+authRouter.get("/profile", authMiddleware.authUser, authController.getProfileController)
 
+
+/**
+ * @route PATCH /api/auth/change-password
+ * @description change the current user's password
+ * @access private
+ */
+authRouter.patch("/change-password", authMiddleware.authUser, authController.changePasswordController)
 
 module.exports = authRouter

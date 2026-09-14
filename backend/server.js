@@ -1,5 +1,8 @@
 const dotenv=require("dotenv");
 dotenv.config();
+require("dotenv").config();
+
+console.log("Gemini key loaded:", !!process.env.GOOGLE_GENAI_API_KEY);
 const connectdb=require("./src/config/database.js");
 
 

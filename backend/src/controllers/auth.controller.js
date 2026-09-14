@@ -2,6 +2,8 @@ const userModel = require("../models/user.model")
 const bcrypt = require("bcryptjs")
 const jwt = require("jsonwebtoken")
 const tokenBlacklistModel = require("../models/blacklist.model")
+const interviewReportModel = require("../models/interviewReport.model")
+const studyPlanModel = require("../models/studyPlan.model")
 
 /**
  * @name registerUserController
@@ -141,11 +143,89 @@ async function getMeController(req, res) {
 
 }
 
+/**
+ * @name getProfileController
+ * @description get the current user's profile info along with aggregated stats.
+ * @access private
+ */
+async function getProfileController(req, res) {
 
+    const user = await userModel.findById(req.user.id)
+
+    const [ reportsCount, studyPlans ] = await Promise.all([
+        interviewReportModel.countDocuments({ user: req.user.id }),
+        studyPlanModel.find({ user: req.user.id }).select("tasks createdAt")
+    ])
+
+    const totalTasks = studyPlans.reduce((sum, plan) => sum + plan.tasks.length, 0)
+    const completedTasks = studyPlans.reduce((sum, plan) => sum + plan.tasks.filter(t => t.status === "completed").length, 0)
+    const overallCompletion = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+    res.status(200).json({
+        message: "Profile fetched successfully",
+        profile: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            stats: {
+                reportsGenerated: reportsCount,
+                studyPlansCreated: studyPlans.length,
+                totalTasks,
+                completedTasks,
+                overallCompletion
+            }
+        }
+    })
+
+}
+
+
+/**
+ * @name changePasswordController
+ * @description change the current user's password, expects currentPassword and newPassword in the request body.
+ * @access private
+ */
+async function changePasswordController(req, res) {
+
+    const { currentPassword, newPassword } = req.body
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({
+            message: "Please provide current and new password"
+        })
+    }
+
+    if (newPassword.length < 6) {
+        return res.status(400).json({
+            message: "New password must be at least 6 characters long"
+        })
+    }
+
+    const user = await userModel.findById(req.user.id)
+
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
+
+    if (!isPasswordValid) {
+        return res.status(400).json({
+            message: "Current password is incorrect"
+        })
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10)
+    user.password = hash
+    await user.save()
+
+    res.status(200).json({
+        message: "Password changed successfully"
+    })
+
+}
 
 module.exports = {
     registerUserController,
     loginUserController,
     logoutUserController,
-    getMeController
+    getMeController,
+    getProfileController,
+    changePasswordController
 }
