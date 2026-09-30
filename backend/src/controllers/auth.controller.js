@@ -115,7 +115,9 @@ async function loginUserController(req, res) {
  * @access public
  */
 async function logoutUserController(req, res) {
-    const token = req.cookies.token
+    const cookieHeader = req.headers.cookie || ""
+    const match = cookieHeader.match(/(?:^|;\s*)token=([^;]*)/)
+    const token = match ? decodeURIComponent(match[1]) : null
 
     if (token) {
         await tokenBlacklistModel.create({ token })
@@ -131,7 +133,6 @@ async function logoutUserController(req, res) {
         message: "User logged out successfully"
     })
 }
-
 /**
  * @name getMeController
  * @description get the current logged in user details.

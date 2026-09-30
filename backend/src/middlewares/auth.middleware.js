@@ -1,46 +1,62 @@
 const jwt = require("jsonwebtoken")
 const tokenBlacklistModel = require("../models/blacklist.model")
 
+
+function parseCookieHeader(cookieHeader) {
+    const cookies = {}
+    if (!cookieHeader) return cookies
+
+    cookieHeader.split(";").forEach(pair => {
+        const index = pair.indexOf("=")
+        if (index > -1) {
+            const key = pair.slice(0, index).trim()
+            const value = pair.slice(index + 1).trim()
+            cookies[ key ] = decodeURIComponent(value)
+        }
+    })
+
+    return cookies
+}
+
+
 async function authUser(req, res, next) {
 
-    try {
+    const cookies = (req.cookies && Object.keys(req.cookies).length > 0)
+        ? req.cookies
+        : parseCookieHeader(req.headers.cookie)
 
-        const authHeader = req.headers.authorization
+    const token = cookies.token
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({
-                message: "Token not provided."
-            })
-        }
-
-        const token = authHeader.split(" ")[1]
-
-        const isTokenBlacklisted = await tokenBlacklistModel.findOne({
-            token
+    if (!token) {
+        return res.status(401).json({
+            message: "Token not provided."
         })
+    }
 
-        if (isTokenBlacklisted) {
-            return res.status(401).json({
-                message: "Token is invalid"
-            })
-        }
+    const isTokenBlacklisted = await tokenBlacklistModel.findOne({
+        token
+    })
 
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        )
+    if (isTokenBlacklisted) {
+        return res.status(401).json({
+            message: "token is invalid"
+        })
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET)
 
         req.user = decoded
 
         next()
 
     } catch (err) {
-
         return res.status(401).json({
             message: "Invalid token."
         })
-
     }
+
 }
+
 
 module.exports = { authUser }
