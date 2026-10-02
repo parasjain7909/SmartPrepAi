@@ -159,6 +159,15 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
     return pdfBuffer
 
 }
+
+
+const STUDY_PLAN_SKILLS = [
+    "JavaScript", "React.js", "Node.js", "Express.js", "MongoDB", "TypeScript",
+    "Full Stack Development", "SQL", "Data Structures & Algorithms", "System Design",
+    "Git & GitHub", "Python", "Machine Learning", "Deep Learning",
+    "Natural Language Processing", "LLMs & Generative AI", "Docker", "AWS", "Java"
+]
+
 const studyPlanGeminiSchema = {
     type: Type.OBJECT,
     properties: {
@@ -171,7 +180,7 @@ const studyPlanGeminiSchema = {
                     day: { type: Type.NUMBER, description: "The day number this task belongs to, starting from 1" },
                     title: { type: Type.STRING, description: "Short title of the task" },
                     description: { type: Type.STRING, description: "What the candidate should specifically do for this task" },
-                    skill: { type: Type.STRING, description: "The skill or topic this task addresses" },
+                    skill: { type: Type.STRING, enum: STUDY_PLAN_SKILLS, description: "The skill this task belongs to — must be the closest match from the allowed list" },
                     estimatedHours: { type: Type.NUMBER, description: "Estimated hours required to complete this task" },
                     priority: { type: Type.STRING, enum: [ "low", "medium", "high" ], description: "Priority of this task based on how critical the skill is for the target role" }
                 },
@@ -193,6 +202,8 @@ async function generateStudyPlan({ targetRole, skillLevel, hoursPerDay, deadline
 
                         Existing Skills: ${existingSkills.join(", ") || "None specified"}
                         Missing/Weak Skills to focus on: ${missingSkills.join(", ") || "None specified"}
+
+                        For each task, classify its "skill" field using the single closest match from this exact list: ${STUDY_PLAN_SKILLS.join(", ")}.
 
                         Distribute tasks realistically across all ${deadlineDays} days. The sum of estimatedHours
                         for tasks on the same day should not exceed ${hoursPerDay} hours.
@@ -223,4 +234,4 @@ async function generateStudyPlan({ targetRole, skillLevel, hoursPerDay, deadline
 
 }
 
-module.exports = { generateInterviewReport, generateResumePdf,generateStudyPlan }
+module.exports = { generateInterviewReport, generateResumePdf, generateStudyPlan }

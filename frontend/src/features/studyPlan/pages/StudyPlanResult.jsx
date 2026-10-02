@@ -2,6 +2,7 @@ import React, { useEffect } from 'react'
 import { useStudyPlan } from '../hooks/useStudyPlan.js'
 import { useParams } from 'react-router'
 
+
 const dotGrid = {
     backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px)',
     backgroundSize: '22px 22px'
@@ -12,9 +13,10 @@ const priorityStyles = {
     medium: 'text-amber-300 bg-amber-400/10 border border-amber-400/20',
     low: 'text-slate-300 bg-white/5 border border-white/10',
 }
-
 const TaskRow = ({ task, onToggle }) => {
     const completed = task.status === 'completed'
+    const resources = getResourcesForSkill(task.skill)
+
     return (
         <div className={`flex items-start gap-3 rounded-xl border p-4 transition-colors ${
             completed ? 'border-emerald-400/20 bg-emerald-400/[0.03]' : 'border-white/10 bg-[#10151F]'
@@ -46,6 +48,31 @@ const TaskRow = ({ task, onToggle }) => {
                     <span>·</span>
                     <span>{task.estimatedHours}h</span>
                 </div>
+
+                {resources.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                        {resources.slice(0, 3).map((res, i) => (
+                            <a
+                                key={i}
+                                href={res.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg border transition-colors ${
+                                    res.type === 'video'
+                                        ? 'text-rose-300 bg-rose-400/5 border-rose-400/15 hover:bg-rose-400/10'
+                                        : 'text-emerald-300 bg-emerald-400/5 border-emerald-400/15 hover:bg-emerald-400/10'
+                                }`}
+                            >
+                                {res.type === 'video' ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" ry="2" /></svg>
+                                ) : (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                )}
+                                {res.title}
+                            </a>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     )

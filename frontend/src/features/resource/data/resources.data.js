@@ -141,6 +141,14 @@ export const RESOURCE_CATEGORIES = [
         label: "Tools & DevOps",
         skills: [
             {
+                skill: "Java",
+                items: [
+                    { type: "video", title: "Java Full Course", source: "freeCodeCamp", url: "https://www.youtube.com/watch?v=xk4_1vDrzzo", level: "beginner", description: "Core syntax, OOP concepts, collections, and exception handling." },
+                    { type: "video", title: "Java Spring Boot Full Course", source: "freeCodeCamp", url: "https://www.youtube.com/watch?v=9SGDpanrc8U", level: "intermediate", description: "Building REST APIs and backend services with Spring Boot." },
+                    { type: "notes", title: "Java Official Documentation", source: "docs.oracle.com", url: "https://docs.oracle.com/en/java/javase/21/docs/api/index.html", level: "intermediate", description: "Official Java SE API reference." },
+                ]
+            },
+            {
                 skill: "Docker",
                 items: [
                     { type: "video", title: "Docker Tutorial for Beginners", source: "TechWorld with Nana", url: "https://www.youtube.com/watch?v=3c-iBn73dDE", level: "beginner", description: "Containers, images, and Docker Compose fundamentals." },
@@ -157,3 +165,14 @@ export const RESOURCE_CATEGORIES = [
         ]
     },
 ]
+
+export const getResourcesForSkill = (skillName) => {
+    if (!skillName) return []
+
+    for (const category of RESOURCE_CATEGORIES) {
+        const match = category.skills.find(s => s.skill === skillName)
+        if (match) return match.items
+    }
+
+    return []
+}
