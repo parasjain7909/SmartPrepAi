@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useStudyPlan } from '../hooks/useStudyPlan.js'
 import { useParams } from 'react-router'
+import { getResourcesForSkill } from '../../resource/data/resources.data.js'
 
 
 const dotGrid = {
